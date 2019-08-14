@@ -37,10 +37,9 @@ import copy
 
 def read_inkml(filename):
     """
-    Read inkml file and generate class dict,stroke dict and expression graph
-    :param filename: file path
-    :param exp_dict: expression dict for the files
-    :return:
+    读取 inkml 文件，返回UID和笔划列表
+    :param filename: 文件路径
+    :return:UID和笔划列表
     """
 
     try:
@@ -65,14 +64,6 @@ def read_inkml(filename):
                     strokes_array[index] = np.asarray(xy[:2], dtype='float')
             strokes.append(strokes_array)
 
-        # print(strokes)
-
-        # Read UID of the file
-        # files_data={}
-        # UID=''
-        # for UI in tree.findall("{http://www.w3.org/2003/InkML}annotation"):
-        #      if(UI.items()[0][1]=='UI'):
-        #          UID=UI.text
         temp_list = filename.split('/')
         UID = temp_list[len(temp_list) - 1].split(".")
 
@@ -184,14 +175,14 @@ def normalizeGeoMetirc(features, rangeX):
     return features
 
 
-def PipeLine(rf, rfSymb, rfParser, outputdir, filename):
+def PipeLine(error_file, error_count, rf, rfSymb, rfParser, outputdir, filename):
     # Reading strokes from inkml files
     UID, Strokes = read_inkml(filename)
     Strokes_copy = copy.deepcopy(Strokes)
     print(UID)
     if len(Strokes) < 2:
-        RDF_test(UID, Strokes, True, None, None)
-        return
+        RDF_test(rf, rfSymb, Strokes, True, None, None)
+        return 1
 
     # Normalizing strokes
     normalizedData, rangeX = normalizaion(Strokes_copy)
@@ -205,7 +196,9 @@ def PipeLine(rf, rfSymb, rfParser, outputdir, filename):
     NormalizedFeatures = normalizeGeoMetirc(Features, rangeX)
     Symbols = RDF_test(rf, rfSymb, copy.deepcopy(Strokes), False, NormalizedFeatures, SLT)
 
-    GTParser.ParserTest(rfParser, outputdir, UID, Symbols, normalizedData, rangeX)
+    error_count = GTParser.ParserTest(error_file, error_count, rfParser, outputdir, UID, Symbols, normalizedData,
+                                      rangeX)
+    return error_count
 
 
 def RDF_test(rf, rfSymb, Strokes, flag, data_array=None, SLT=None):
@@ -214,6 +207,7 @@ def RDF_test(rf, rfSymb, Strokes, flag, data_array=None, SLT=None):
         classification_pairs.append([0])
     else:
         # leaf_indices = rdtree.predict(data_array)
+        # 使用Segment模型
         leaf_indices = rf.predict(data_array)
 
         # for i in range(len(data_array)):
@@ -305,10 +299,13 @@ def OR_fromat(filename, symbol):
 def read_files(rf, rfSymb, rfParser, outputdir, dir):
     for curr_dir, subdir, files in os.walk(dir):
         count = 0
+        error_count = 0
+        error_file = open("error.txt", "w")
         for filename in glob.glob(os.path.join(curr_dir, '*.inkml')):
-            PipeLine(rf, rfSymb, rfParser, outputdir, filename)
+            error_count += PipeLine(error_file, error_count, rf, rfSymb, rfParser, outputdir, filename)
             count += 1
         print(count)
+        print("错误率:" + str(float(error_count) / count))
 
 
 def main():

@@ -279,7 +279,7 @@ def ParserPipeline(fileinkml, dirlg, target):
     print(UID)
     if len(Strokes) < 3 or len(Symbols) < 2:
         return
-    SymbLabelStroke, LabelSymb, SymbRel = readRelations(dirlg + '/' + UID + '.lg')
+    SymbLabelStroke, LabelSymb, SymbRel = readRelations(dirlg + UID + '.lg')
     # print(filelg)
     normalizedData, rangeX = normalizaion(Strokes)
     CombinedStrokes, SymbLabelList = getSymbStrokes(SymbLabelStroke, normalizedData)
@@ -397,4 +397,5 @@ def main():
         read_files(Inkmlname, Lgname, target)
 
 
-main()
+if __name__ == '__main__':
+    main()

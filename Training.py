@@ -29,7 +29,17 @@ from sklearn.externals import joblib
 
 def read_data(filename):
     input_file = open(filename, 'r')
-    data = list(reader(input_file))
+
+    data = []
+    while 1:
+        lines = input_file.readlines(100000)
+        if not lines:
+            break
+        for line in lines:
+            temp_list = line.split(',')
+
+            data.append(temp_list)
+
     UID = []
 
     mat_data = np.zeros((len(data), len(data[0]) - 2))
@@ -48,10 +58,15 @@ def Parserrandomforest(filepath):
     # filename='C:\\Users\\ritvi\\PycharmProjects\\PatternRecproject2\\SegmentorFeature.csv'
     print(filepath)
     filename = filepath
+    print("文件读取中")
     data_array, result_array = read_data(filename)
+    print("文件读取完毕")
     rdtree = RandomForestClassifier(n_estimators=100)
+    print("开始训练")
     rdtree = rdtree.fit(data_array, result_array)
+    print("训练完毕")
     pickle.dump(rdtree, open('data/pickle/ParserClassifier_v64.p', 'wb'))
+    print("模型保存完毕")
 
 
 def Segmentorrandomforest(filepath):
@@ -86,18 +101,20 @@ classes--每个笔划的标签
 
 def readSymbol(filename):
     input_file = open(filename, 'r')
-    data = list(reader(input_file))
-    UID = []
+    data = []
+    while 1:
+        lines = input_file.readlines(100000)
+        if not lines:
+            break
+        for line in lines:
+            data.append(line)
 
     mat_data = np.zeros((len(data), len(data[0]) - 2))
     classes = []  # np.zeros((len(data)))
     print(mat_data.shape)
     for i in range(len(data)):
-        # UID.append(data[i][0])
-        # print(data[i])
         mat_data[i] = np.asarray(data[i][1:len(data[i]) - 1], dtype='float32')
         classes.append(data[i][-1])
-        # np.asarray(data[i][len(data[i]) -1], dtype='float')
 
     print(mat_data)
     print(classes)

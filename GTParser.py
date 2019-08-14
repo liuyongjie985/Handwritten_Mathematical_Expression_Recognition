@@ -190,12 +190,14 @@ def geometric_features(strokes, pair):
 
 def normalizeGeoMetirc(features, rangeX):
     # print(features)
-    for idx in range(13):
-        # maxF = max(features[:,idx])
-        # minF = min(features[:,idx])
-        # NC  = maxF - minF
-        # NC = max(NC,1)
-        features[:, idx] = np.divide(features[:, idx], rangeX)
+    if features != []:
+
+        for idx in range(13):
+            # maxF = max(features[:,idx])
+            # minF = min(features[:,idx])
+            # NC  = maxF - minF
+            # NC = max(NC,1)
+            features[:, idx] = np.divide(features[:, idx], rangeX)
     return features
 
 
@@ -310,7 +312,7 @@ def ParserPipeline(fileinkml):
     OR_fromat(UID, LabelToSymb, LabelToStroke, RelationGraph, SLT)
 
 
-def ParserTest(rfParser, outputdir, UID, Symbols, normalizedData, rangeX):
+def ParserTest(error_file, error_count, rfParser, outputdir, UID, Symbols, normalizedData, rangeX):
     print(UID)
 
     CombinedStrokes, SymbLabelList, LabelToSymb, LabelToStroke = getSymbStrokes(Symbols, normalizedData)
@@ -322,27 +324,22 @@ def ParserTest(rfParser, outputdir, UID, Symbols, normalizedData, rangeX):
 
     # writeSymbFeature(UID, Feature)
     # print(Feature)
+    if Feature != []:
+        Feature = np.asarray(Feature)
+        NormalizedFeatures = normalizeGeoMetirc(Feature, rangeX)
 
-    Feature = np.asarray(Feature)
-    NormalizedFeatures = normalizeGeoMetirc(Feature, rangeX)
-
-    '''
-    call random forest to get relations
-    '''
-    RelationGraph, SLT = RDFTest(rfParser, SymbLabelList, NormalizedFeatures, pairs)
-    OR_fromat(outputdir, UID, LabelToSymb, LabelToStroke, RelationGraph, SLT)
-
-
-# def writeSymbFeature(UID,NormalizedFeatures):
-#     target2=open('wrongfeature.csv','w')
-#     count=0
-#     for features in NormalizedFeatures:
-#         row = UID + ","
-#         for data_idx in range(len(features)):
-#                 row+=str(features[data_idx])+','
-#         row+='\n'
-#
-#     target2.write(row)
+        '''
+        call random forest to get relations
+        '''
+        RelationGraph, SLT = RDFTest(rfParser, SymbLabelList, NormalizedFeatures, pairs)
+        OR_fromat(outputdir, UID, LabelToSymb, LabelToStroke, RelationGraph, SLT)
+        return 0
+    else:
+        error_file.write(UID)
+        error_file.write('\n')
+        error_count += 1
+        print("错误数" + str(error_count))
+        return 1
 
 
 def RDFTest(rfParser, SymbLabelList, NormalizedFeatures, pairs):
