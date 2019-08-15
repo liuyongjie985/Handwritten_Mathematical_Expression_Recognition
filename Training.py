@@ -37,7 +37,14 @@ classes--每个笔划的标签
 
 def readSymbol(filename):
     input_file = open(filename, 'r')
-    data = list(reader(input_file))
+    data = []
+    while 1:
+        lines = input_file.readlines(100000)
+        if not lines:
+            break
+        for line in lines:
+            temp_list = [x.strip() for x in line.split(',')]
+            data.append(temp_list)
 
     mat_data = np.zeros((len(data), len(data[0]) - 2))
     classes = []  # np.zeros((len(data)))
@@ -54,48 +61,6 @@ def readSymbol(filename):
 
 def read_data(filename):
     input_file = open(filename, 'r')
-    data = list(reader(input_file))
-
-    UID = []
-
-    mat_data = np.zeros((len(data), len(data[0]) - 2))
-    classes = np.zeros((len(data)))
-    print(mat_data.shape)
-    for i in range(len(data)):
-        UID.append(data[i][0])
-        mat_data[i] = np.asarray(data[i][1:len(data[i]) - 1], dtype='float')
-        classes[i] = np.asarray(data[i][len(data[i]) - 1], dtype='float')
-    print(mat_data)
-    print(classes)
-    return mat_data, classes
-
-
-def readSymbol_improve(filename):
-    input_file = open(filename, 'r')
-    data = []
-    while 1:
-        lines = input_file.readlines(100000)
-        if not lines:
-            break
-        for line in lines:
-            temp_list = line.split(',')
-            data.append(temp_list)
-
-    mat_data = np.zeros((len(data), len(data[0]) - 2))
-    classes = []  # np.zeros((len(data)))
-    print(mat_data.shape)
-    for i in range(len(data)):
-        mat_data[i] = np.asarray(data[i][1:len(data[i]) - 1], dtype='float32')
-        classes.append(data[i][-1])
-
-    print(mat_data)
-    print(classes)
-
-    return mat_data, classes
-
-
-def read_data_improve(filename):
-    input_file = open(filename, 'r')
 
     data = []
     while 1:
@@ -103,8 +68,7 @@ def read_data_improve(filename):
         if not lines:
             break
         for line in lines:
-            temp_list = line.split(',')
-
+            temp_list = [x.strip() for x in line.split(',')]
             data.append(temp_list)
 
     UID = []
